@@ -16,4 +16,11 @@
 # 132 Step-5 Installing Git and creating a local git repository
 # 134 step-6 c) Connect Spring cloud Config Server to local Git Repository -v2
 # 135 step-7 Connect Limits Service to Spring Cloud Config Server.- V2
+# 136 Step-8 Configuring Profiles for Limits Service
+# 137  Debugging guide for microservices + Docker + docker compose
+# 138 Step-9 Intro to Currency Conversion and Exchange microservices.
+# 139 Step-10 Setting up Currency Exchange microservice.
+# 141 Step-11 Create a simple hardcoded currency-exchange-service
+# 142 Step-12 Setting up the dynamic port in the response
+# 143 Step-13 Configure Jpa and Initialize Data
 

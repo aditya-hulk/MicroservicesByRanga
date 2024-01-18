@@ -363,5 +363,331 @@ public class SpringCloudConfigServerApplication {
 
 ![Alt text](image-51.png)
 
+# 136 Step-8 Configuring Profiles for Limits Service
+![Alt text](image-52.png)
+
+We do copy pasting in particular folder 
+![Alt text](image-53.png)
+
+![Alt text](image-54.png)
+![Alt text](image-55.png)
+
+## How do you call this?
+
+![Alt text](image-56.png)
+
+![Alt text](image-57.png)
+
+## Now how to configure dev profiles for limits microservice.
+```properties
+
+spring.config.import=optional:configserver:http://localhost:8888
+
+spring.application.name=limits-service
+
+limits-service.minimum=2
+limits-service.maximum=998
 
 
+#configure dev profile
+spring.profiles.active=dev
+spring.cloud.config.profile=dev
+```
+
+![Alt text](image-59.png)
+
+![Alt text](image-60.png)
+
+### Similarly for qa environment
+```properties
+
+spring.config.import=optional:configserver:http://localhost:8888
+
+spring.application.name=limits-service
+
+limits-service.minimum=2
+limits-service.maximum=998
+
+
+#configure qa profile
+spring.profiles.active=qa
+spring.cloud.config.profile=qa
+```
+
+![Alt text](image-61.png)
+
+![Alt text](image-62.png)
+
+![Alt text](image-63.png)
+
+# 137  Debugging guide for microservices + Docker + docker compose
+![Alt text](image-64.png)
+https://github.com/in28minutes/spring-microservices-v3/blob/main/03.microservices/01-step-by-step-changes/readme.md#spring-cloud-config-server---steps-01-to-08
+
+# 138 Step-9 Intro to Currency Conversion and Exchange microservices.
+
+Currency Conversion microservice interanally call karengi currency exchange service ko aur puchengi ki aaj ka rate kya hai.. and calculate karke result devengi.
+
+![Alt text](image-65.png)
+
+![Alt text](image-66.png)
+
+# 139 Step-10 Setting up Currency Exchange microservice.
+![Alt text](image-67.png)
+
+![Alt text](image-68.png)
+
+## application.properties
+```properties
+spring.config.import=optional:configserver:htttp//localhost:8888
+server.port=8000
+
+spring.application.name=currency-exchange
+```
+
+# 141 Step-11 Create a simple hardcoded currency-exchange-service
+
+Let's create a rest api for independent microservice i.e CurrencyExchangeService.  
+It must have some response.
+
+
+Uri for currency-exchange-service  
+http://localhost:8000/currency-exchange/from/USD/to/INR
+
+```java
+package com.adi.microservicese.bean;
+/*
+ * Response Structure
+{
+   "id":10001,
+   "from":"USD",
+   "to":"INR",
+   "conversionMultiple":65.00,
+   "environment":"8000 instance-id"
+}
+ * */
+
+import java.math.BigDecimal;
+
+public class CurrencyExchange {
+
+	private Long id;
+	private String from;
+	private String to;
+	private BigDecimal conversionMultiple;
+	public CurrencyExchange() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public CurrencyExchange(Long id, String from, String to, BigDecimal conversionMultiple) {
+		super();
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.conversionMultiple = conversionMultiple;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getFrom() {
+		return from;
+	}
+	public void setFrom(String from) {
+		this.from = from;
+	}
+	public String getTo() {
+		return to;
+	}
+	public void setTo(String to) {
+		this.to = to;
+	}
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}
+	public void setConversionMultiple(BigDecimal conversionMultiple) {
+		this.conversionMultiple = conversionMultiple;
+	}
+}
+```
+
+```java
+package com.adi.microservicese.controller;
+
+import java.math.BigDecimal;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.adi.microservicese.bean.CurrencyExchange;
+
+@RestController
+public class CurrencyExchangeController {
+
+	//http://localhost:8000/currency-exchange/from/USD/to/INR
+	
+	@GetMapping("/currency-exchange/from/{from}/to/{to}")
+	public CurrencyExchange retriveExchangeValue(
+								@PathVariable String from,
+								@PathVariable String to	) {
+		
+		
+		return new CurrencyExchange(1000L, from, to, BigDecimal.valueOf(50));
+				
+	}
+}
+
+```
+
+![Alt text](image-69.png)
+
+# 142 Step-12 Setting up the dynamic port in the response
+![Alt text](image-70.png)
+
+currency conversion microservice ko pata kaise chalenga ki currency exchnge ka konsa instance response provide kar raha hai.
+
+Different port par instance honge.
+
+### 1. Add environment to identify the port also getter and setter
+
+![Alt text](image-71.png)
+
+### 2.Extract local variable and set port of environment.
+![Alt text](image-72.png)
+
+![Alt text](image-73.png)
+
+ye static port set hua.. hum Dynamic port set kaise kare.
+
+
+### 3.How would i get value of port. Spring offer Environment
+![Alt text](image-74.png)
+
+![Alt text](image-75.png)
+
+### I want to launch this application on port 8001 as well i.e multiple instances
+
+![Alt text](image-76.png)
+
+![Alt text](image-77.png)
+
+![Alt text](image-78.png)
+
+![Alt text](image-79.png)
+
+![Alt text](image-80.png)
+
+```java
+package com.adi.microservicese.bean;
+/*
+ * Response Structure
+{
+   "id":10001,
+   "from":"USD",
+   "to":"INR",
+   "conversionMultiple":65.00,
+   "environment":"8000 instance-id"
+}
+ * */
+
+import java.math.BigDecimal;
+
+public class CurrencyExchange {
+
+	private Long id;
+	private String from;
+	private String to;
+	private BigDecimal conversionMultiple;
+	private String environment;
+	
+	public CurrencyExchange() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public CurrencyExchange(Long id, String from, String to, BigDecimal conversionMultiple) {
+		super();
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.conversionMultiple = conversionMultiple;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getFrom() {
+		return from;
+	}
+	public void setFrom(String from) {
+		this.from = from;
+	}
+	public String getTo() {
+		return to;
+	}
+	public void setTo(String to) {
+		this.to = to;
+	}
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}
+	public void setConversionMultiple(BigDecimal conversionMultiple) {
+		this.conversionMultiple = conversionMultiple;
+	}
+	public String getEnvironment() {
+		return environment;
+	}
+	public void setEnvironment(String environment) {
+		this.environment = environment;
+	}
+	
+}
+
+```
+
+```java
+package com.adi.microservicese.controller;
+
+import java.math.BigDecimal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.adi.microservicese.bean.CurrencyExchange;
+
+@RestController
+public class CurrencyExchangeController {
+
+	//Import core Environment not cloud config
+	// @Autowired it since we require object of that 
+	
+	@Autowired
+	private Environment environment;
+	
+	//http://localhost:8000/currency-exchange/from/USD/to/INR	
+	@GetMapping("/currency-exchange/from/{from}/to/{to}")
+	public CurrencyExchange retriveExchangeValue(
+								@PathVariable String from,
+								@PathVariable String to	) {
+		
+		
+		CurrencyExchange currencyExchange = new CurrencyExchange(1000L, from, to, BigDecimal.valueOf(50));
+		
+		String port = environment.getProperty("local.server.port");
+		
+		currencyExchange.setEnvironment(port);
+		
+		return currencyExchange;
+				
+	}
+}
+
+```
+# 143 Step-13 Configure Jpa and Initialize Data
