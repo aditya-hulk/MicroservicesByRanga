@@ -691,3 +691,576 @@ public class CurrencyExchangeController {
 
 ```
 # 143 Step-13 Configure Jpa and Initialize Data
+
+yaha hum inMemory Database use karenge h2 and we have SpringDataJPA to talk with that db.
+
+### 1. Add dependencies & Restart your app.
+![Alt text](image-81.png)
+
+### see logs - an inmemory db is created for us at specific location.
+![Alt text](image-82.png)
+
+### We won't require dynamic address everytime so i configure lot of things.
+
+![Alt text](image-83.png)
+
+![Alt text](image-84.png)
+
+### Type in browser localhost:8000/h2-console since i run 8000 instance.
+![Alt text](image-85.png)
+![Alt text](image-86.png)
+
+#### No tables is present in h2 console
+
+### 2.create tables and add data in it.
+Let's create and Entity
+![Alt text](image-87.png)
+
+A table will be created for us in background check logs.
+![Alt text](image-88.png)
+
+![Alt text](image-89.png)
+
+###  Expected identifier.. means we are using some keyword i.e from is a reserve keyword in sql so we can't use that.
+
+![Alt text](image-94.png)
+
+![Alt text](image-91.png)
+Table is created but no data.
+
+### Note : Name of table is Currency_Exchange and we create bean CurrencyExchange and look column. In java we differentiate with camel case, in sql use _(underscore). See above two dig
+
+### 3. Insert data in it. Under resource folder create data.sql. 
+![Alt text](image-92.png)
+
+The data is loaded before the tables are created in upgraded version in spring boot. So we need to defer the execution of data.sql.
+
+![Alt text](image-95.png)
+
+![Alt text](image-93.png)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.adi.microservices</groupId>
+	<artifactId>currency-exchange-service</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>currency-exchange-service</name>
+	<description>Demo project forMicroservices</description>
+	<properties>
+		<java.version>17</java.version>
+		<spring-cloud.version>2023.0.0</spring-cloud.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+```
+```java
+package com.adi.microservicese.bean;
+/*
+ * Response Structure
+{
+   "id":10001,
+   "from":"USD",
+   "to":"INR",
+   "conversionMultiple":65.00,
+   "environment":"8000 instance-id"
+}
+ * */
+
+import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
+public class CurrencyExchange {
+
+	@Id
+	private Long id;
+	
+	@Column(name = "currency_from")
+	private String from;
+	
+	@Column(name = "currency_to")
+	private String to;
+	
+	private BigDecimal conversionMultiple;
+	
+	private String environment;
+	
+	public CurrencyExchange() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public CurrencyExchange(Long id, String from, String to, BigDecimal conversionMultiple) {
+		super();
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.conversionMultiple = conversionMultiple;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getFrom() {
+		return from;
+	}
+	public void setFrom(String from) {
+		this.from = from;
+	}
+	public String getTo() {
+		return to;
+	}
+	public void setTo(String to) {
+		this.to = to;
+	}
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}
+	public void setConversionMultiple(BigDecimal conversionMultiple) {
+		this.conversionMultiple = conversionMultiple;
+	}
+	public String getEnvironment() {
+		return environment;
+	}
+	public void setEnvironment(String environment) {
+		this.environment = environment;
+	}
+	
+}
+
+```
+
+```properties
+
+spring.config.import=optional:configserver:htttp//localhost:8888
+server.port=8000
+
+spring.application.name=currency-exchange
+
+#Want to see all sql statement
+spring.jpa.show-sql=true
+
+#Required static datasource url
+spring.datasource.url=jdbc:h2:mem:testdb
+
+#Enable h2 console
+spring.h2.console.enabled=true
+
+spring.jpa.defer-datasource-initialization=true
+
+```
+
+```sql
+insert into currency_exchange
+(id,currency_from,currency_to,conversion_multiple,environment)
+values(10001,'USD','INR',65,'');
+
+insert into currency_exchange
+(id,currency_from,currency_to,conversion_multiple,environment)
+values(10002,'EUR','INR',75,'');
+
+insert into currency_exchange
+(id,currency_from,currency_to,conversion_multiple,environment)
+values(10003,'AUD','INR',25,'');
+```
+
+# 154 Step-14. Create a JPA repository - v2
+
+Hum CurrencyExchange se hardocoded data return kar rahe hai. Ab waise na karte hue hum data db se return karenge. So hume db se operation karne ke liye interface banana honga joh JPARepostory ko extend karenga
+
+ ![Alt text](image-97.png)
+
+ ![Alt text](image-99.png)
+
+ ![Alt text](image-100.png)
+ ![Alt text](image-101.png)
+ ![Alt text](image-102.png)
+ ![Alt text](image-103.png)
+
+ ```java
+ package com.adi.microservicese.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.adi.microservicese.bean.CurrencyExchange;
+
+//Require 2 things which Entity to manage and it's primary key
+public interface CurrencyExchangeRepository extends JpaRepository<CurrencyExchange, Long>{
+
+	
+	//We want to search the table kaha se kaha tak (from se to tak)
+	// use findBy
+	//   konsa column name from
+	//      konse column tak to
+	//  Dono parameter provide karne honge.. kyuki from aur to change hote rahenga
+	//      Ye return kya karenga specific CurrencyExchange value
+	// automatically  Spring data Jpa sql query banake fire kar lenga..
+	
+	CurrencyExchange findByFromAndTo(String from,String to);
+	
+}
+
+ ```
+
+```java
+package com.adi.microservicese.controller;
+
+import java.math.BigDecimal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.adi.microservicese.bean.CurrencyExchange;
+import com.adi.microservicese.repo.CurrencyExchangeRepository;
+
+@RestController
+public class CurrencyExchangeController {
+	
+	//Use it in Controller to fetch the data
+	@Autowired
+	private CurrencyExchangeRepository repository;
+
+	//Import core Environment not cloud config
+	// @Autowired it since we require object of that 
+	
+	@Autowired
+	private Environment environment;
+	
+	//http://localhost:8000/currency-exchange/from/USD/to/INR	
+	@GetMapping("/currency-exchange/from/{from}/to/{to}")
+	public CurrencyExchange retriveExchangeValue(
+								@PathVariable String from,
+								@PathVariable String to	) {
+		
+		
+//		CurrencyExchange currencyExchange = new CurrencyExchange(1000L, from, to, BigDecimal.valueOf(50));
+		
+		CurrencyExchange currencyExchange = repository.findByFromAndTo(from, to);
+		
+		if(currencyExchange == null) {
+			throw new RuntimeException("Unable to find data = from : " + from +" and to : "+to);
+		}
+		String port = environment.getProperty("local.server.port");
+		
+		currencyExchange.setEnvironment(port);
+		
+		return currencyExchange;
+				
+	}
+}
+
+```
+
+# 156. Step-15 Setting up Currency Conversion Microservice -V2
+![Alt text](image-105.png)
+
+CurrencyConversion microservice is talking with in memory db.And we are creating a simple rest Api
+![Alt text](image-106.png)
+
+Now we want to create a CurrencyConversion microservice
+![Alt text](image-107.png)
+
+![Alt text](image-108.png)
+
+![Alt text](image-109.png)
+
+![Alt text](image-110.png)
+
+![Alt text](image-111.png)
+
+# 158. Step-16 Creating a service for Currency conversion-v2
+
+![Alt text](image-112.png)
+
+```java
+package com.adi.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+
+/*
+ * Response Structure
+{
+  "id": 10001,
+  "from": "USD",
+  "to": "INR",
+  "quantity": 10,  //We take all input from our user
+  "conversionMultiple": 65.00,  
+  "totalCalculatedAmount": 650.00,
+  "environment": "8000 instance-id"
+}
+
+ * */
+public class CurrencyConversion {
+
+	private Long id;
+	private String from;
+	private String to;
+	private BigDecimal quantity;
+	private BigDecimal conversionMultiple;
+	private BigDecimal totalCalculatedAmount;
+	private String environment;
+	
+	public CurrencyConversion() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	public CurrencyConversion(Long id, String from, String to, BigDecimal quantity, BigDecimal conversionMultiple,
+			BigDecimal totalCalculatedAmount, String environment) {
+		super();
+		this.id = id;
+		this.from = from;
+		this.to = to;
+		this.quantity = quantity;
+		this.conversionMultiple = conversionMultiple;
+		this.totalCalculatedAmount = totalCalculatedAmount;
+		this.environment = environment;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public void setFrom(String from) {
+		this.from = from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public void setTo(String to) {
+		this.to = to;
+	}
+
+	public BigDecimal getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(BigDecimal quantity) {
+		this.quantity = quantity;
+	}
+
+	public BigDecimal getConversionMultiple() {
+		return conversionMultiple;
+	}
+
+	public void setConversionMultiple(BigDecimal conversionMultiple) {
+		this.conversionMultiple = conversionMultiple;
+	}
+
+	public BigDecimal getTotalCalculatedAmount() {
+		return totalCalculatedAmount;
+	}
+
+	public void setTotalCalculatedAmount(BigDecimal totalCalculatedAmount) {
+		this.totalCalculatedAmount = totalCalculatedAmount;
+	}
+
+	public String getEnvironment() {
+		return environment;
+	}
+
+	public void setEnvironment(String environment) {
+		this.environment = environment;
+	}
+	
+	
+}
+
+```
+
+```java
+package com.adi.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class CurrencyConversionController {
+
+	//http://localhost:8100/currency-conversion/from/USD/to/INR/quantity/10
+	
+	@GetMapping("/currency-conversion/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversion calculateCurrencyConversion(
+			@PathVariable String from,
+			@PathVariable String to,
+			@PathVariable BigDecimal quantity) {
+		
+		//return hardcode value
+		return new CurrencyConversion(10001L, from, to, quantity, BigDecimal.ONE, BigDecimal.ONE, "");
+		
+	}
+}
+
+```
+
+```properties
+
+spring.config.import=optional:configserver:http://localhost:8888
+
+spring.application.name=currency-conversion
+server.port=8100
+
+```
+
+![Alt text](image-113.png)
+
+# 159. Step-17 Invoking CurrencyExchange from CurrencyConverson Microservice- v2
+
+ek microservice dusere ko kaise call karti. Old way.
+
+```java
+package com.adi.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class CurrencyConversionController {
+
+	//http://localhost:8100/currency-conversion/from/USD/to/INR/quantity/10
+	
+	@GetMapping("/currency-conversion/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversion calculateCurrencyConversion(
+			@PathVariable String from,
+			@PathVariable String to,
+			@PathVariable BigDecimal quantity) {
+		
+		//RestTemplate is used to make rest api call
+		
+		// U send a getRequest and you want to get object back therefore getForEntity()		
+		//   1st arg - what is the url we want to invoke (currency-exchange service url)
+		//      http://localhost:8000/currency-exchange/from/USD/to/INR 
+		//         make sure it is running 
+		//       abhi ke liye ye url hardcode karte .later on we make it dynamic. 
+		//  http://localhost:8000/currency-exchange/from/{from}/to/{to} 
+		//     isko hardcode nhi karna 				
+		
+		//   2nd arg- Response should be converted into
+		//      CurrencyConversion.class
+		
+		//  3rd arg -next thing you pass should be what the values of from and to
+		//    uriVariables ie. HashMap
+		
+		HashMap<String,String> uriVariables = new HashMap<>();
+		uriVariables.put("from", from);
+		uriVariables.put("to", to);
+		
+		ResponseEntity<CurrencyConversion> responseEntity = 
+				new RestTemplate()
+					.getForEntity("http://localhost:8000/currency-exchange/from/{from}/to/{to} ",
+				    CurrencyConversion.class,
+				    uriVariables);
+		
+		//Remember most of the fields are same in case of CurrencyExchange & CurrecnyConversion
+		
+		//how do you get return value from responseEntity
+		CurrencyConversion currencyConversion = responseEntity.getBody();
+		
+		return new CurrencyConversion(
+				currencyConversion.getId(),
+				from, to, quantity, 
+				currencyConversion.getConversionMultiple(),
+				quantity.multiply(currencyConversion.getConversionMultiple()),
+				currencyConversion.getEnvironment());
+		
+	}
+}
+
+```
+![Alt text](image-114.png)
+
+![Alt text](image-115.png)
+
+# 160. Step-18 using feign rest client for service invocation-v2

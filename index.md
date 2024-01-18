@@ -1,3 +1,4 @@
+
 # Section-4 Quick introduction to Microservices
 # 60. Intro Microservices with Spring Cloud
 # 61 Step-1 Intro to microservices
@@ -23,4 +24,11 @@
 # 141 Step-11 Create a simple hardcoded currency-exchange-service
 # 142 Step-12 Setting up the dynamic port in the response
 # 143 Step-13 Configure Jpa and Initialize Data
+# 154 Step-14. Create a JPA repository - v2
+# 156. Step-15 Setting up Currency Conversion Microservice -V2
+# 158. Step-16 Creating a service for Currency conversion-v2
+# 159. Step-17 Invoking CurrencyExchange from CurrencyConverson Microservice- v2
+# 160. Step-18 using feign rest client for service invocation-v2
 
+
+![Alt text](image-104.png)
