@@ -29,6 +29,7 @@
 # 158. Step-16 Creating a service for Currency conversion-v2
 # 159. Step-17 Invoking CurrencyExchange from CurrencyConverson Microservice- v2
 # 160. Step-18 using feign rest client for service invocation-v2
+# 162. Step-19 Understand Naming Server and Setting up Eureka naming server-v2
 
 
 ![Alt text](image-104.png)

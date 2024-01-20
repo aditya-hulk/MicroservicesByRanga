@@ -1264,3 +1264,215 @@ public class CurrencyConversionController {
 ![Alt text](image-115.png)
 
 # 160. Step-18 using feign rest client for service invocation-v2
+
+A simple microservice ko call karne ke liye aapko upar ke program mein 20 lines of code likhna pad raha hai. Image yadi 100 microservice ko ek mek ko call karna hia  to.. Therefore to make easy call feign comes in picture.
+
+### Step-1 Add depedency
+![Alt text](image-116.png)
+
+### Step-2 Enable Feign Client - jaha se apne ko call karna hia proxy ko
+![Alt text](image-117.png)
+
+hume currencyconversionService se currency-exchange ko call karna hai... So create an interface proxy for that.
+
+### Step-3 Create a proxy 
+#### a) Give proper name in proxy. Name aisa do jisko call karna hia uska application name hona mangata.
+![Alt text](image-118.png)
+
+This should match with this
+
+![Alt text](image-119.png)
+
+#### b) we need to put url -
+![Alt text](image-120.png)
+
+#### c) jo specific service  call karna hai it should part of method
+![Alt text](image-121.png)
+
+isse call karna hia apne proxy mein.. aisa likhna hia ki ye return kare.. CurrencyConversion
+
+![Alt text](image-122.png)
+
+Yaha automatically map ho javengi value..
+
+Now proxy is ready.
+
+### Step-4 Use proxy to call microservices
+![Alt text](image-123.png)
+
+![Alt text](image-124.png)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.adi.microservices</groupId>
+	<artifactId>currency-conversion-service</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>currency-conversion-service</name>
+	<description>Demo project forMicroservices</description>
+	<properties>
+		<java.version>17</java.version>
+		<spring-cloud.version>2023.0.0</spring-cloud.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+```
+```java
+package com.adi.microservices.currencyconversionservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
+@SpringBootApplication
+@EnableFeignClients
+public class CurrencyConversionServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CurrencyConversionServiceApplication.class, args);
+	}
+
+}
+
+```
+```java
+package com.adi.microservices.currencyconversionservice;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+@FeignClient(name = "currency-exchange", url = "localhost:8000")
+public interface CurrencyExchangeProxy {
+
+	@GetMapping("/currency-exchange/from/{from}/to/{to}")
+	public CurrencyConversion retriveExchangeValue(
+			@PathVariable String from,
+			@PathVariable String to);
+}
+
+```
+```java
+package com.adi.microservices.currencyconversionservice;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class CurrencyConversionController {
+
+	@Autowired
+	private CurrencyExchangeProxy proxy;
+
+	@GetMapping("/currency-conversion-feign/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversion calculateCurrencyConversionFeign(
+			@PathVariable String from, 
+			@PathVariable String to,
+			@PathVariable BigDecimal quantity) {
+
+		CurrencyConversion currencyConversion = proxy.retriveExchangeValue(from, to);
+
+		return new CurrencyConversion(currencyConversion.getId(), from, to, quantity,
+				currencyConversion.getConversionMultiple(),
+				quantity.multiply(currencyConversion.getConversionMultiple()),
+				currencyConversion.getEnvironment() + "  Feign");
+
+	}
+
+	// http://localhost:8100/currency-conversion/from/USD/to/INR/quantity/10
+	@GetMapping("/currency-conversion/from/{from}/to/{to}/quantity/{quantity}")
+	public CurrencyConversion calculateCurrencyConversion(
+			@PathVariable String from,
+			@PathVariable String to,
+			@PathVariable BigDecimal quantity) {
+
+		HashMap<String, String> uriVariables = new HashMap<>();
+		uriVariables.put("from", from);
+		uriVariables.put("to", to);
+
+		ResponseEntity<CurrencyConversion> responseEntity = 
+						new RestTemplate().getForEntity(
+				"http://localhost:8000/currency-exchange/from/{from}/to/{to} ", 
+				CurrencyConversion.class, 
+				uriVariables);
+
+		CurrencyConversion currencyConversion = responseEntity.getBody();
+
+		return new CurrencyConversion(currencyConversion.getId(), from, to, quantity,
+				currencyConversion.getConversionMultiple(),
+				quantity.multiply(currencyConversion.getConversionMultiple()),
+				currencyConversion.getEnvironment() + " Rest Template");
+
+	}
+
+}
+
+```
+# 162. Step-19 Understand Naming Server and Setting up Eureka naming server-v2
