@@ -1476,3 +1476,137 @@ public class CurrencyConversionController {
 
 ```
 # 162. Step-19 Understand Naming Server and Setting up Eureka naming server-v2
+
+Upar pgm mein microservice ek dusre ko badhiya call kar rahi hai.. but abhi bhi thoda problem hai.
+
+### a) we are hardcoding the url in currency-exchange-proxy
+![Alt text](image-125.png)
+
+Abhi currency-conversion ye currency exchange ke 8000 instance se talk kar raha hia.. Kal hume (i.e currency-conversion ko) yadi dusre instance (i.e currency-exchange 8001) se talk karna raha so we need to again hardcoded the url
+
+![Alt text](image-127.png)
+This is not the good solution.
+
+
+### WE need to dynamically launch the currency-exchange instances and distributed load between them.
+![Alt text](image-126.png)
+
+### For this purpose we go for service registry or naming server.
+
+### 1. All the instances of all the microservices should be register with service registry.
+![Alt text](image-128.png)
+
+Ab yadi currency Conversion ko talk karna hai currency-exchange se so wo naming server ko puchenga.. ki what are the instance are available for currency-exchange aur jo instance up honga .. usse baat kar lenga.
+
+![Alt text](image-129.png)
+
+iss tarah se aasani se load balance ho javenga.
+
+## Let's create naming server
+![Alt text](image-130.png)
+
+### Step-1 Add dependency 
+You already did at the time of creation of project
+
+### Step-2 Enable Eureka server
+![Alt text](image-132.png)
+
+### Step-3 configuring ports and all stuffs
+![Alt text](image-133.png)
+
+![Alt text](image-134.png)
+
+![Alt text](image-135.png)
+
+# 163. Debugging problem with Eureka
+https://github.com/in28minutes/spring-microservices-v3/blob/main/03.microservices/01-step-by-step-changes/readme.md#eureka---step-19-to-21
+
+
+# 164 Step-20. Connect CurrencyConversion and CurrencyExchange microservice
+
+## Let's connect our microservices to naming server.
+
+### Step-1 Add dependency
+
+This dependency added in pom.xml of CurrencyExchange and CurrencyConversion microservices
+![Alt text](image-136.png)
+
+if some error come add this line in app.properties since there is some check happen
+![Alt text](image-137.png)
+
+![Alt text](image-138.png)
+
+### Step-2 Configure naming server url in app.prop
+WE want to play really safe. so directly add url in app.properties
+
+![Alt text](image-139.png)
+
+When you add this this microservice will reregisterd itself with Eureka server.
+
+Ho sakta hai aage hume aur different eureka server se connect hona pade. Par default url ye hai.
+
+![Alt text](image-140.png)
+
+### Read naming server logs
+![Alt text](image-141.png)
+
+Application jab register hoti hai tab status up hota hai and unregisterd jab hoti hai tab status down hota hai
+
+Jab bhi aap application restart karte ho.. tab application pahele unregister hoti hai phir register hoti hai.
+
+### currency-exchange
+```properties
+
+spring.config.import=optional:configserver:htttp//localhost:8888
+server.port=8000
+
+spring.application.name=currency-exchange
+
+#Want to see all sql statement
+spring.jpa.show-sql=true
+
+#Required static datasource url
+spring.datasource.url=jdbc:h2:mem:testdb
+
+#Enable h2 console
+spring.h2.console.enabled=true
+
+spring.jpa.defer-datasource-initialization=true
+
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+```
+
+### currency-conversion app.prop
+```properties
+
+spring.config.import=optional:configserver:http://localhost:8888
+
+spring.application.name=currency-conversion
+server.port=8100
+
+
+spring.cloud.config.import-check.enabled=false
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+```
+
+### dependency
+```xml
+	<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+```
+
+# 166 Git hub repo updates
+Use the following repo's based on your Spring Boot version
+
+Spring Boot 3.0+ - https://github.com/in28minutes/spring-microservices-v3
+
+Spring Boot 2.4+ - https://github.com/in28minutes/spring-microservices-v2
+
+# 167 Step-21 quickstart by importing microservices
+
+

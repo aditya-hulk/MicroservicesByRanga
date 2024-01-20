@@ -30,6 +30,10 @@
 # 159. Step-17 Invoking CurrencyExchange from CurrencyConverson Microservice- v2
 # 160. Step-18 using feign rest client for service invocation-v2
 # 162. Step-19 Understand Naming Server and Setting up Eureka naming server-v2
+# 163. Debugging problem with Eureka
+# 164 Step-20. Connect CurrencyConversion and CurrencyExchange microservice
+# 166 Git hub repo updates
+# 167 Step-21 quickstart by importing microservices
 
 
 ![Alt text](image-104.png)
