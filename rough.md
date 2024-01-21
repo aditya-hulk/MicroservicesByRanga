@@ -1688,3 +1688,62 @@ In app.propertis
 # 171. Step-23 Enabling discovery locator with Eureka for spring cloud gateway.
 
 
+The port we launch an api-gateway
+
+http://localhost:8765/
+
+How currency exchange service is registered in eureka naming server.
+![Alt text](image-161.png)
+
+so we want to route/call the request via api-gateway
+
+http://localhost:8765/CURRENCY-EXCHANGE/currency-exchange/from/USD/to/INR
+
+Before doing anything lets confirm that the currency-exchange is running fine
+![Alt text](image-162.png)
+
+![Alt text](image-163.png)
+
+Actually we want api-gateway to talk with registred name and route request/traffic from there.
+
+We required configuration in app.props.
+![Alt text](image-165.png)
+
+
+![Alt text](image-164.png)
+
+Give your client this url and whatever common feature you require write in api-gateway. 
+
+Eg- You require user with some authentication or authrization can access particular microservices. So you write all feature in api-gateway and give client this api-gateway url.
+
+When a user hit.. he has to fulfill all the condition. This part taken care by api-gateway.
+
+![Alt text](image-166.png)
+
+Initial
+
+- http://localhost:8765/CURRENCY-EXCHANGE/currency-exchange/from/USD/to/INR
+
+- http://localhost:8765/CURRENCY-CONVERSION/currency-conversion/from/USD/to/INR/quantity/10
+
+- http://localhost:8765/CURRENCY-CONVERSION/currency-conversion-feign/from/USD/to/INR/quantity/10
+
+### Now to make below url works
+Lower Case
+
+- http://localhost:8765/currency-exchange/currency-exchange/from/USD/to/INR
+
+- http://localhost:8765/currency-conversion/currency-conversion/from/USD/to/INR/quantity/10
+
+- http://localhost:8765/currency-conversion/currency-conversion-feign/from/USD/to/INR/quantity/10
+
+![Alt text](image-167.png)
+
+![Alt text](image-168.png)
+
+# 172. Debugging problem
+https://github.com/in28minutes/spring-microservices-v3/blob/main/03.microservices/01-step-by-step-changes/readme.md#spring-cloud-api-gateway---step-22-to-step-25
+
+
+# 173 step-24 Exploring routes via spring cloud gateway.
+

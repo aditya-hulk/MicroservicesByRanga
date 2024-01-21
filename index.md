@@ -37,6 +37,8 @@
 # 168 Step-22 Load balancing with eureka, feign and spring cloud loadbalancer.
 # 169. Step-22 Setting up a Spring cloud Api gateway.
 # 171. Step-23 Enabling discovery locator with Eureka for spring cloud gateway.
+# 172. Debugging problem
+# 173 step-24 Exploring routes via spring cloud gateway.
 
 
 
