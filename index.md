@@ -34,6 +34,10 @@
 # 164 Step-20. Connect CurrencyConversion and CurrencyExchange microservice
 # 166 Git hub repo updates
 # 167 Step-21 quickstart by importing microservices
+# 168 Step-22 Load balancing with eureka, feign and spring cloud loadbalancer.
+# 169. Step-22 Setting up a Spring cloud Api gateway.
+# 171. Step-23 Enabling discovery locator with Eureka for spring cloud gateway.
+
 
 
 ![Alt text](image-104.png)

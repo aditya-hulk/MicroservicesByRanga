@@ -1609,4 +1609,82 @@ Spring Boot 2.4+ - https://github.com/in28minutes/spring-microservices-v2
 
 # 167 Step-21 quickstart by importing microservices
 
+![Alt text](image-142.png)
+
+If you have problem with import make sure you use latest version of ecilipse.
+
+# 168 Step-22 Load balancing with eureka, feign and spring cloud loadbalancer.
+
+### Loadbalancing between multiple instances of currency-exchange microservices.
+![Alt text](image-143.png)
+
+### To make a loadbalance between multiple instances, Go to proxy and do the following changes.
+![Alt text](image-144.png)
+
+### Now let's launch multiple instances of currency-exchange and observe currency-conversion
+![Alt text](image-145.png)
+![Alt text](image-146.png)
+
+In eureka- 2 instances are running for currency-exchange instance.
+![Alt text](image-149.png)
+
+Currency-conversion
+![Alt text](image-147.png)
+![Alt text](image-148.png)
+
+
+#### What happen?
+Inside currency-conversion microservice there is a compoonent called load balancer which is talking to the naming server, finding the instances and automatically doing the load balance between them.  
+This is called Client side load balancing.  
+And this is happening through feign. 
+
+![Alt text](image-150.png)
+
+#### How does feign do load balancing?
+Go to currencncy conversion microservice pom.xml
+
+![Alt text](image-151.png)
+
+There is load balancer brought by netflix eureka client to the classpath. And this loadbalancer is used by feign to actually distribute the load between multiple instances which are return by Eureka.
+
+Now Spring cloud load balancer is used earlier there is Ribbion.
+
+# 169. Step-22 Setting up a Spring cloud Api gateway.
+
+All microservices have lot's of common feature authentication, autherization, logging, rate limiting etc.. 
+
+so where you implement these common feture. The solution is API Gateway. 
+
+Earlier there is Zull who is responsible for doing that but no longer support by eureka. 
+
+Now Spring Cloud Gateway is responsible to handle all stuff.
+
+![Alt text](image-152.png)
+
+![Alt text](image-153.png)
+
+![Alt text](image-154.png)
+
+### Note: Not working
+Earlier we select this 
+![Alt text](image-155.png)
+
+In pom.xml it is identified that
+![Alt text](image-156.png)
+
+So now we take
+![Alt text](image-157.png)
+
+having dependency
+![Alt text](image-159.png)
+
+In app.propertis
+![Alt text](image-158.png)
+
+### Always check dependency otherwise project not work, also i take help of maven dependencies.
+
+![Alt text](image-160.png)
+
+# 171. Step-23 Enabling discovery locator with Eureka for spring cloud gateway.
+
 
