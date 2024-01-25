@@ -1747,3 +1747,137 @@ https://github.com/in28minutes/spring-microservices-v3/blob/main/03.microservice
 
 # 173 step-24 Exploring routes via spring cloud gateway.
 
+### Let's build custom route
+
+One of the option to build custom route is to create a Configuration file
+
+#### 0) When we won't customized anything return in this format
+![Alt text](image-169.png)
+
+
+ ### 1)
+ ![Alt text](image-170.png)
+
+ ![Alt text](image-171.png)
+
+![Alt text](image-172.png)
+The httpbin.org exposes a lot of api and we are hitting one of the api.. which return response back with few headers along with origin and original request.
+
+### 2) We want to add Header or path parameter
+![Alt text](image-173.png)
+![Alt text](image-174.png)
+
+So b4 calling httpbin.org it will add MyHeader and MYURI as a header
+### 3) U can also add other things, let's add request parameter
+![Alt text](image-175.png)
+
+![Alt text](image-176.png)
+
+This all are our authentication headers.
+### 4) Write everything inline
+![Alt text](image-177.png)
+
+![Alt text](image-178.png)
+![Alt text](image-179.png)
+
+### 5) Now we add few more route definations
+a) Disable this in app.properties, since i want to provide my customized route
+![Alt text](image-180.png)
+
+![Alt text](image-181.png)
+
+![Alt text](image-182.png)
+
+![Alt text](image-183.png)
+
+U can also write in small letter's
+![Alt text](image-184.png)
+
+### 6) for Resttemplate- we hardcoded
+![Alt text](image-185.png)
+![Alt text](image-186.png)
+
+### 7) for feign
+![Alt text](image-187.png)
+
+![Alt text](image-188.png)
+![Alt text](image-189.png)
+
+Both /currency-conversion and /currency-conversion-feign redirect to currency-conversion service in eureka
+### 8)  U can even create new url and rewrite them
+I want to call /currency-conversion-new instead of /currency-conversion-feign but it redirect to currency-conversion ie feign in eureka.
+
+![Alt text](image-190.png)
+
+![Alt text](image-191.png)
+![Alt text](image-192.png)
+
+```properties
+
+spring.application.name=api-gateway
+
+server.port=8765
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+#spring.cloud.gateway.discovery.locator.enabled=true
+
+#spring.cloud.gateway.discovery.locator.lowerCaseServiceId=true
+```
+
+```java
+package com.adi.microservices.apigateway1;
+
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+ class ApiGatewayConfiguration {
+
+
+	@Bean
+	public RouteLocator gatewayRouter(RouteLocatorBuilder builder) {
+		
+	
+		
+		return builder.routes()
+				       .route(p ->p.path("/get")
+							.filters(f -> f
+									  .addRequestHeader("MyHeader", "MYURI")
+									  .addRequestParameter("MyParam", "MyValue")
+									)
+							.uri("http://httpbin.org:80")
+							)
+	
+				       .route(p-> p.path("/currency-exchange/**")				    		   
+				    		   .uri("lb://currency-exchange")
+				    		   )
+				       
+				       
+				       	.route(p-> p.path("/currency-conversion/**")				    		   
+				    		   .uri("lb://currency-conversion")
+				    		   )
+				       	
+				       	.route(p-> p.path("/currency-conversion-feign/**")				    		   
+					    		   .uri("lb://currency-conversion")
+					    		   )
+				       	
+				       	.route(p-> p.path("/currency-conversion-new/**")
+				       				.filters(f -> f.rewritePath(
+				       						"/currency-conversion-new/(?<segment>.*)", 
+				       						"/currency-conversion-feign/${segment}"))
+					    		   .uri("lb://currency-conversion")
+					    		   )
+				      .build();
+	}
+	
+}
+
+```
+
+# 174 Step-25 Implementing Spring cloud gateway logging filter.
+
+
+

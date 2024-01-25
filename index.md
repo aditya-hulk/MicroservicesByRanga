@@ -39,6 +39,7 @@
 # 171. Step-23 Enabling discovery locator with Eureka for spring cloud gateway.
 # 172. Debugging problem
 # 173 step-24 Exploring routes via spring cloud gateway.
+# 174 Step-25 Implementing Spring cloud gateway logging filter.
 
 
 
