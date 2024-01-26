@@ -40,6 +40,9 @@
 # 172. Debugging problem
 # 173 step-24 Exploring routes via spring cloud gateway.
 # 174 Step-25 Implementing Spring cloud gateway logging filter.
+# 175 Step-26 Getting Started with Circuit Breaker- Resilience 4j
+# 177 Step-27 Playing with Resilience4j - Retry and fallback method
+
 
 
 

@@ -1879,5 +1879,92 @@ import org.springframework.context.annotation.Configuration;
 
 # 174 Step-25 Implementing Spring cloud gateway logging filter.
 
+In last step, humne dekha hum kisi specific path mein custom filter kaise add karte hai.
+
+Abhi hum Global filter kaise add kare yeh dekhenge.
+
+Humko har request jo Api Gateway ke pass ja rahi hai usko log karna hia.. Specif request nhi ... sari request jo api ke pass ja rahi hai.. So we use concept of Global filter.
+
+![Alt text](image-193.png)
+
+![Alt text](image-194.png)
+
+![Alt text](image-195.png)
+
+```java
+package com.adi.microservices.apigateway1;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+
+import reactor.core.publisher.Mono;
+
+
+@Component
+public class LoggingFilter implements GlobalFilter{
+
+	private Logger logger = LoggerFactory.getLogger(LoggingFilter.class);
+	
+	@Override
+	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+		
+		//I want to log info about req = Present in exchange 
+		// {} = ye replace ho javenga.. exchange.getReq().getPat() se
+		
+		logger.info("Path of the object received -> {}", 
+				exchange.getRequest().getPath());
+		
+		//After logging the request 
+		//  let the execution continue
+		
+		return chain.filter(exchange);
+	}
+
+}
+```
+![Alt text](image-196.png)
+
+# 175 Step-26 Getting Started with Circuit Breaker- Resilience 4j
+
+![Alt text](image-197.png)
+
+Microservices calling each other also depend on each other. yadi microservice 4 slow hue ya down hue.. enitre chain will impact.
+
+### Q) Can we return a fallback response?
+Default response  
+Not possible for credit cards.  
+But possible for shopping application.. isme default list of product ka response dikha sakte hia.. instead of total products
+
+### Q) Can we implement circuit breaker pattern to reduce the load?
+Humko pata hai ki microservice 4 down hai.. toh instead of htting repeatedly--  kya hum microservices 4 ko bina hit kiye  default response de sakte hai...
+
+### Q) Can we retry request in case of temprary failures?
+Yadi microservice 4 down hia.. toh hum kuch time retry(hit karenge) microservice 4 fhir bhi down chala tab default response de denge..
+
+
+### Q) Can we implement reate limiting?
+specific hit in a specific period of time isse kahte hai rate limiting.
+
+![Alt text](image-198.png)
+
+Earlier Netflix hystrix is a circuit breaker framework.  
+Abhi ***Resiliance4j*** is a recommended circuit breaker framework.
+
+![Alt text](image-199.png)
+
+### Let's play with concept  of Circuit breaker use currency-exchange service.
+![Alt text](image-201.png)
+![Alt text](image-200.png)
+
+![Alt text](image-202.png)
+
+# 177 Step-27 Playing with Resilience4j - Retry and fallback method
+
+
+
 
 
