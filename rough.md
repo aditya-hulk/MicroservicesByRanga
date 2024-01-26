@@ -2381,3 +2381,148 @@ resilience4j.retry.instances.sample-api.enableExponentialBackoff=true
 #resilience4j.circuitbreaker.instances.default.failureRateThreshold=90
 ```
 # 179 Step-29 Exploring Rate limiting and bulk head feature of Resilience 4j
+
+### Rate limiting
+
+In 10 seconds i only allow 100 calls .. to this specific api
+
+![Alt text](image-231.png)
+
+![Alt text](image-232.png)
+
+pahele sample-api mila.. fhir 10 secons baad
+![Alt text](image-233.png)
+
+```java
+package com.adi.microservicese.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+
+@RestController
+public class CircuitBreakerController {
+
+	private Logger logger = LoggerFactory.getLogger(CircuitBreakerController.class);
+	
+	//I will use defualt configuration
+	
+	@GetMapping("/sample-api")
+	@RateLimiter(name="default")
+	public String sampleApit() {
+	
+		logger.info("Sample Api rate limiter=== ");		
+		return "sample-api";
+	}
+	
+}
+
+```
+
+```properties
+
+spring.config.import=optional:configserver:htttp//localhost:8888
+server.port=8000
+
+spring.application.name=currency-exchange
+
+
+spring.jpa.show-sql=true
+
+
+spring.datasource.url=jdbc:h2:mem:testdb
+
+
+spring.h2.console.enabled=true
+
+spring.jpa.defer-datasource-initialization=true
+
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+resilience4j.retry.instances.sample-api.maxAttempts=6
+resilience4j.retry.instances.sample-api.waitDuration=2s
+resilience4j.retry.instances.sample-api.enableExponentialBackoff=true
+
+#resilience4j.circuitbreaker.instances.default.failureRateThreshold=90
+
+#hum 10seconds mein 2 call he allow karenge
+resilience4j.ratelimiter.instances.default.limitForPeriod=2
+resilience4j.ratelimiter.instances.default.limitRefreshPeriod=10s
+
+```
+
+### BulkHead
+How many concurrent calls are allowed
+
+Concurrency refers to the ability to run multiple tasks at the same time, which can increase the efficiency of an application.
+
+```java
+package com.adi.microservicese.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+
+@RestController
+public class CircuitBreakerController {
+
+	private Logger logger = LoggerFactory.getLogger(CircuitBreakerController.class);
+
+	@GetMapping("/sample-api")
+	@Bulkhead(name = "sample-api")
+	public String sampleApit() {
+
+		logger.info("bulk head callses ");
+		return "sample-apibulk";
+	}
+
+}
+
+```
+
+```properties
+
+spring.config.import=optional:configserver:htttp//localhost:8888
+server.port=8000
+
+spring.application.name=currency-exchange
+
+
+spring.jpa.show-sql=true
+
+
+spring.datasource.url=jdbc:h2:mem:testdb
+
+
+spring.h2.console.enabled=true
+
+spring.jpa.defer-datasource-initialization=true
+
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+resilience4j.retry.instances.sample-api.maxAttempts=6
+resilience4j.retry.instances.sample-api.waitDuration=2s
+resilience4j.retry.instances.sample-api.enableExponentialBackoff=true
+
+#resilience4j.circuitbreaker.instances.default.failureRateThreshold=90
+
+#hum 10seconds mein 2 call he allow karenge
+resilience4j.ratelimiter.instances.default.limitForPeriod=2
+resilience4j.ratelimiter.instances.default.limitRefreshPeriod=10s
+
+
+resilience4j.bulkhead.instances.default.maxConcurrentCalls=5
+resilience4j.bulkhead.instances.sample-api.maxConcurrentCalls=5
+```
+# How to be productive
+
+![Alt text](image-235.png)
+![Alt text](image-234.png)
