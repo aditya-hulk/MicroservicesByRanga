@@ -42,6 +42,7 @@
 # 174 Step-25 Implementing Spring cloud gateway logging filter.
 # 175 Step-26 Getting Started with Circuit Breaker- Resilience 4j
 # 177 Step-27 Playing with Resilience4j - Retry and fallback method
+# 178 Step-28 Playing with Circuit breaker feture of Resilience4j
 
 
 

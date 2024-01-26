@@ -1964,7 +1964,285 @@ Abhi ***Resiliance4j*** is a recommended circuit breaker framework.
 
 # 177 Step-27 Playing with Resilience4j - Retry and fallback method
 
+## Features
+
+### Retry
+
+Upar pgm ko ie /sample-api ko hum aasani se call kar paa rahe hai.   
+Hum aisa karenge.. ki ye call na ho paye.. fhir hum @Retry ka magic dekhenge.
+
+![Alt text](image-203.png)
+
+![Alt text](image-204.png)
+
+#### let say ye joh some-dummy-url wali microservice hai kuch temporary down hai... yadi aap isse hit kare kuch time to up ho javengi..
+
+![Alt text](image-205.png)
+
+![Alt text](image-206.png)
+
+But just check log
+![Alt text](image-207.png)
+
+yaid application fail hua.. toh retry feature ye fhir se hit karenga.. generaly 3 times .. aur yadi fhir bhi response nhi aaya..  toh error dikha denga..
+
+#### how can we configure specific number of retry interval
+![Alt text](image-208.png)
+![Alt text](image-209.png)
+![Alt text](image-210.png)
+
+![Alt text](image-211.png)
+
+### Configuring fallback method
+
+Problem approach
+![Alt text](image-212.png)
+
+![Alt text](image-213.png)
+
+![Alt text](image-214.png)
+
+Right Approach
+![Alt text](image-215.png)
 
 
 
+6 baar retry hua.. joh humne configure kiya tha.. last mein.. usne fallback response de diya
+![Alt text](image-217.png)
 
+![Alt text](image-216.png)
+
+### Configure intervals between retry via waitDuration
+![Alt text](image-219.png)
+
+![Alt text](image-218.png)
+
+![Alt text](image-220.png)
+
+### Configure intervals between retry via exponential backoff
+
+![Alt text](image-222.png)
+![Alt text](image-221.png)
+![Alt text](image-220.png)
+
+Most of api use exponentials backoff
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.1</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.adi.microservices</groupId>
+	<artifactId>currency-exchange-service</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>currency-exchange-service</name>
+	<description>Demo project forMicroservices</description>
+	<properties>
+		<java.version>17</java.version>
+		<spring-cloud.version>2023.0.0</spring-cloud.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot2</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+```
+
+```java
+package com.adi.microservicese.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import io.github.resilience4j.retry.annotation.Retry;
+
+@RestController
+public class CircuitBreakerController {
+
+	/*
+	 * 
+	 * 
+	@GetMapping("/sample-api")
+	public String sampleApi() {
+		
+		return "sample-api";
+	}
+	
+	
+	
+	@GetMapping("/sample-api")
+	@Retry(name = "default")
+	public String sampleApit() {
+	
+		logger.info("Sample Api call recirved aaya === ");
+		
+		ResponseEntity<String> entity = 
+				new RestTemplate().getForEntity(
+							"http://localhost:8080/some-dummy-url",
+							String.class);
+		
+		
+		return entity.getBody();
+	}
+	
+	@GetMapping("/sample-api")
+	@Retry(name = "sample-api")
+	public String sampleApit() {
+	
+		logger.info("Sample Api call recirved aayo re  === ");
+		
+		ResponseEntity<String> entity = 
+				new RestTemplate().getForEntity(
+							"http://localhost:8080/some-dummy-url",
+							String.class);
+		
+		
+		return entity.getBody();
+	}
+	
+	*/
+	
+
+	private Logger logger = LoggerFactory.getLogger(CircuitBreakerController.class);
+	
+	//Configuring fallbackMethod
+	
+	@GetMapping("/sample-api")
+	@Retry(name = "sample-api",fallbackMethod = "hardcodeResponseMethod")
+	public String sampleApit() {
+	
+		logger.info("Sample Api call recirved aayo re  === ");
+		
+		ResponseEntity<String> entity = 
+				new RestTemplate().getForEntity(
+							"http://localhost:8080/some-dummy-url",
+							String.class);
+		
+		
+		return entity.getBody();
+	}
+	
+	
+	public String hardcodeResponseMethod(Exception ex) {
+		
+		return "fallback-response";
+	}
+	
+	
+	
+}
+
+```
+
+```properties
+
+spring.config.import=optional:configserver:htttp//localhost:8888
+server.port=8000
+
+spring.application.name=currency-exchange
+
+
+spring.jpa.show-sql=true
+
+
+spring.datasource.url=jdbc:h2:mem:testdb
+
+
+spring.h2.console.enabled=true
+
+spring.jpa.defer-datasource-initialization=true
+
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+resilience4j.retry.instances.sample-api.maxAttempts=6
+resilience4j.retry.instances.sample-api.waitDuration=2s
+
+resilience4j.retry.instances.sample-api.enableExponentialBackoff=true
+```
+# 178 Step-28 Playing with Circuit breaker feture of Resilience4j
