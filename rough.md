@@ -2246,3 +2246,138 @@ resilience4j.retry.instances.sample-api.waitDuration=2s
 resilience4j.retry.instances.sample-api.enableExponentialBackoff=true
 ```
 # 178 Step-28 Playing with Circuit breaker feture of Resilience4j
+
+CirucitBreaker ka concept use tab hota hia.. jab apne app(ya microservice) ko bahut jyada number mein request hit karti hai...
+
+![Alt text](image-223.png)
+
+U need to fire lot of request to specific api
+
+![Alt text](image-224.png)
+
+In Unix
+![Alt text](image-225.png)
+
+Aapki microservice band hai.. ek particular number of request tak wo try karnega.. method call kareneka ki waha se response de sake..instead of fall back response...
+
+par next time jab usse laga ki bhai woh api band hai.. to next time directly wo fallback response denga.. try nhi karenga method call karneko
+
+eg:  
+humne ne browser se hit kiya honga.. lagbhag 50 to 100 times  
+
+so circuit breaker ne try kiya ki method se response laye instaed of fall back response..   
+but confirm  hone ke baad ki method down hai.. call karke matlab nhi direct fallback response do.. log dekho
+
+![Alt text](image-226.png)
+
+It will break the circuit and directly return the response back
+
+### hume pata kaise chale ki microservice backup/suru ho gyi hia so that i am call again 
+![Alt text](image-227.png)
+
+Circuit breaker mein multiple state hoti hai..
+
+### 1) Closed 
+jab hum depenedent microservices ko call kar rahe hia continuously..
+### 2) Open 
+open-state mein.. circuitbreaker did not call the depenedent microservice.aur directly return the fallback response..
+### 3) half-open 
+A circuit breaker send a particular percent to dependent microservice aur for rest of the request it will return fall back response.
+
+
+### 1 state se dusre mein kab switch karta..
+jab aap app ko start karte.. CB in closed state..  
+ humne 10000 time hit kiya api ko aur identify kiya ki 90% time ye api fail hua.. so CB switch to open state..
+
+ Open state mein jane ke baad CB wait karenga thode samay ke liye.. we can configure that time..
+
+ Us duration ke baad CB switch to half-open state..  
+ Half open mein CB check karta ki dependent microservice ye up hai kya..  
+  by sending some percent of request (10% 20% ) aap isko configure kar sakte..
+
+  Yadi usko proper response mila.. toh closed state mein javenga..nhi to open state..
+
+  ![Alt text](image-228.png)
+  lot of configuration..
+
+  ### Yml se properties file mein kaise convert karte..
+  ![Alt text](image-229.png)
+  ![Alt text](image-230.png)
+
+  Yadi 90% failure rate hua.. tab open state mein janeka..
+
+  ```java
+  package com.adi.microservicese.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+@RestController
+public class CircuitBreakerController {
+
+	private Logger logger = LoggerFactory.getLogger(CircuitBreakerController.class);
+	
+	//Use @CircuitBreaker annotaion
+	// use defualt configuration so use name as default
+	@GetMapping("/sample-api")
+	@CircuitBreaker(name = "default",fallbackMethod = "hardcodeResponseMethod")
+	public String sampleApit() {
+	
+		logger.info("Sample Api call recirved aayo re  === ");
+		
+		ResponseEntity<String> entity = 
+				new RestTemplate().getForEntity(
+							"http://localhost:8080/some-dummy-url",
+							String.class);
+		
+		
+		return entity.getBody();
+	}
+	
+	
+	public String hardcodeResponseMethod(Exception ex) {
+		
+		return "fallback-response";
+	}
+	
+}
+
+  ```
+
+```properties
+
+spring.config.import=optional:configserver:htttp//localhost:8888
+server.port=8000
+
+spring.application.name=currency-exchange
+
+
+spring.jpa.show-sql=true
+
+
+spring.datasource.url=jdbc:h2:mem:testdb
+
+
+spring.h2.console.enabled=true
+
+spring.jpa.defer-datasource-initialization=true
+
+
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+
+resilience4j.retry.instances.sample-api.maxAttempts=6
+resilience4j.retry.instances.sample-api.waitDuration=2s
+
+resilience4j.retry.instances.sample-api.enableExponentialBackoff=true
+
+#let's customized the percentage..
+# hume default change karna hia
+#resilience4j.circuitbreaker.instances.default.failureRateThreshold=90
+```
+# 179 Step-29 Exploring Rate limiting and bulk head feature of Resilience 4j
